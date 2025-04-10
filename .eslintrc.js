@@ -6,5 +6,7 @@ module.exports = {
     'jsx-quotes': 'off',
     semi: 'off',
     'no-trailing-spaces': 'off',
+    'eol-last': 'off',
+    quotes: 'off',
   },
 };
