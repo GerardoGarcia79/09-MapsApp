@@ -8,5 +8,6 @@ module.exports = {
     'no-trailing-spaces': 'off',
     'eol-last': 'off',
     quotes: 'off',
+    'react-native/no-inline-styles': 'off',
   },
 };
