@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable curly */
 import {Platform} from 'react-native';
-import MapView, {PROVIDER_GOOGLE} from 'react-native-maps';
+import MapView, {Polyline, PROVIDER_GOOGLE} from 'react-native-maps';
 import {Location} from '../../../infrastructure/interfaces/location';
 import {FAB} from '../ui/FAB';
 import {useEffect, useRef, useState} from 'react';
@@ -16,9 +16,15 @@ export const Maps = ({showsUserLocation = true, initialLocation}: Props) => {
   const mapRef = useRef<MapView | null>(null);
   const cameraLocation = useRef<Location>(initialLocation);
   const [isFollowingUser, setIsFollowingUser] = useState(true);
+  const [isShowingPolyline, setIsShowingPolyline] = useState(true);
 
-  const {getLocation, lastKnownLocation, watchLocation, clearWatchLocation} =
-    useLocationStore();
+  const {
+    getLocation,
+    lastKnownLocation,
+    watchLocation,
+    clearWatchLocation,
+    userLocationList,
+  } = useLocationStore();
 
   const moveCameraToLocation = (location: Location) => {
     if (!mapRef.current) return;
@@ -65,6 +71,13 @@ export const Maps = ({showsUserLocation = true, initialLocation}: Props) => {
           latitudeDelta: 0.015,
           longitudeDelta: 0.0121,
         }}>
+        {isShowingPolyline && (
+          <Polyline
+            coordinates={userLocationList}
+            strokeColor="black"
+            strokeWidth={5}
+          />
+        )}
         {/* <Marker
           coordinate={{
             latitude: 37.78825,
@@ -75,6 +88,14 @@ export const Maps = ({showsUserLocation = true, initialLocation}: Props) => {
           image={require('../../../assets/marker.png')}
         /> */}
       </MapView>
+      <FAB
+        iconName={isShowingPolyline ? 'eye-outline' : 'eye-off-outline'}
+        onPress={() => setIsShowingPolyline(!isShowingPolyline)}
+        style={{
+          bottom: 140,
+          right: 20,
+        }}
+      />
       <FAB
         iconName={isFollowingUser ? 'walk-outline' : 'accessibility-outline'}
         onPress={() => setIsFollowingUser(!isFollowingUser)}
