@@ -1,7 +1,10 @@
+/* eslint-disable curly */
 import {Platform} from 'react-native';
 import MapView, {PROVIDER_GOOGLE} from 'react-native-maps';
 import {Location} from '../../../infrastructure/interfaces/location';
 import {FAB} from '../ui/FAB';
+import {useRef} from 'react';
+import {useLocationStore} from '../../store/location/useLocationStore';
 
 interface Props {
   showsUserLocation?: boolean;
@@ -9,15 +12,38 @@ interface Props {
 }
 
 export const Maps = ({showsUserLocation = true, initialLocation}: Props) => {
+  const mapRef = useRef<MapView | null>(null);
+  const cameraLocation = useRef<Location>(initialLocation);
+
+  const {getLocation, lastKnownLocation} = useLocationStore();
+
+  const moveCameraToLocation = (location: Location) => {
+    if (!mapRef.current) return;
+
+    mapRef.current.animateCamera({
+      center: location,
+    });
+  };
+
+  const moveToCurrentLocation = async () => {
+    if (!lastKnownLocation) {
+      moveCameraToLocation(initialLocation);
+    }
+    const location = await getLocation();
+    if (!location) return;
+    moveCameraToLocation(location);
+  };
+
   return (
     <>
       <MapView
+        ref={mapRef}
         showsUserLocation={showsUserLocation}
         provider={Platform.OS === 'ios' ? undefined : PROVIDER_GOOGLE} // remove if not using Google Maps
         style={{flex: 1}}
         region={{
-          latitude: initialLocation.latitude,
-          longitude: initialLocation.longitude,
+          latitude: cameraLocation.current.latitude,
+          longitude: cameraLocation.current.longitude,
           latitudeDelta: 0.015,
           longitudeDelta: 0.0121,
         }}>
@@ -33,7 +59,7 @@ export const Maps = ({showsUserLocation = true, initialLocation}: Props) => {
       </MapView>
       <FAB
         iconName="compass-outline"
-        onPress={() => console.log('FAB')}
+        onPress={moveToCurrentLocation}
         style={{
           bottom: 20,
           right: 20,
